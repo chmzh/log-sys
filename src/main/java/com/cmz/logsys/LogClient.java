@@ -47,11 +47,8 @@ public class LogClient  {
 		GlobalConstant.logDir = logDir;
 	}
 	
-	public static void setTencent(boolean flag){
-		if(flag){
-			GlobalConstant.host = "10.104.93.208";
-			GlobalConstant.port = 8080;
-		}
+	public static void setConnections(int connections){
+		GlobalConstant.connections = connections;
 	}
 
 	public static void setRetryThreads(int retryThreads){
