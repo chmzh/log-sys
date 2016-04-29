@@ -17,6 +17,8 @@ public class GlobalConstant {
 	
 	public static boolean debug = false;
 	
+	public static int connections = 1;
+	
 	public final static String userreginfo = "userreginfo";
 	public final static String userlogininfo = "userlogininfo";
 	public final static String serverselinfo = "serverselinfo";
