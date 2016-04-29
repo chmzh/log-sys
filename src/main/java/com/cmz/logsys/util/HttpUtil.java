@@ -10,7 +10,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.config.SocketConfig;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -18,7 +18,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 
 import com.cmz.logsys.constant.GlobalConstant;
-import com.cmz.logsys.domain.DataMsg;
 import com.cmz.logsys.domain.Message;
 import com.google.gson.Gson;
 
@@ -26,8 +25,6 @@ import com.google.gson.Gson;
 
 public class HttpUtil {
 	// 接口地址
-		
-		private CloseableHttpClient httpClient = null;
 		private HttpPost method = null;
 		private long startTime = 0L;
 		private long endTime = 0L;
@@ -35,7 +32,17 @@ public class HttpUtil {
 		private String apiURL = "http://"+GlobalConstant.host+":"+GlobalConstant.port+"/json";
 
 
-		
+		private static PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+		private static CloseableHttpClient httpClient = null;
+
+		static{
+			cm.setMaxTotal(2000);
+			SocketConfig socketConfig = SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(800).build();
+			HttpHost host = new HttpHost(GlobalConstant.host, GlobalConstant.port);
+			cm.setSocketConfig(host, socketConfig);
+			
+			httpClient = HttpClients.custom().setConnectionManager(cm).build();
+		}
 		/**
 		 * 接口地址
 		 * 
@@ -43,7 +50,7 @@ public class HttpUtil {
 		 */
 		public HttpUtil() {
 
-			httpClient = HttpClients.createDefault();
+			//httpClient = HttpClients.createDefault();
 			
 			method = new HttpPost(apiURL);
 		}
@@ -104,11 +111,11 @@ public class HttpUtil {
 					status = 4;
 				}
 				finally{
-					method.abort();
+					//method.abort();
 					if(response!=null){
 						try {
 							response.close();
-							httpClient.close();
+							//httpClient.close();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
