@@ -12,7 +12,7 @@ public class GlobalConstant {
 	
 	public static int retryThreads = 3;
 	
-	public static String host = "cloud.dovogame.com";
+	public static String host = "my.web.com";
 	public static int port = 8080;
 	
 	public static boolean debug = false;
