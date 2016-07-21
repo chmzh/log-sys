@@ -1,4 +1,4 @@
-package com.cndw.statistics.util;
+package com.cmz.logsys.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
