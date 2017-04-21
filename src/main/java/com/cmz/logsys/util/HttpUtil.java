@@ -147,6 +147,102 @@ public class HttpUtil {
 			return body;
 		}
 
+	
+	   public static String httpPostForm(String url, Map<String,String> params) {
+        String body = "";
+        CloseableHttpResponse response = null;
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPost method = new HttpPost(url);
+
+        try {
+            List<NameValuePair> pairList = new ArrayList<>();
+            if (!params.isEmpty()) {
+                for (Map.Entry<String, String> entry : params.entrySet()) {
+                    pairList.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+
+                }
+            }
+
+            UrlEncodedFormEntity uefEntity = new UrlEncodedFormEntity(pairList, "UTF-8");
+            method.setEntity(uefEntity);
+            //method.addHeader("Content-type","application/json; charset=utf-8");
+            method.setHeader("Accept", "application/json; charset=utf-8");
+            response = httpClient.execute(method);
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != HttpStatus.SC_OK) {
+                LogUtil.getConsole().error(url + "网络问题:" + statusCode);
+            } else {
+                HttpEntity entity = response.getEntity();
+                body = EntityUtils.toString(entity, "utf-8").trim();
+            }
+        } catch (ClientProtocolException e) {
+            LogUtil.getConsole().error(url, e);
+
+        } catch (IOException e) {
+            LogUtil.getConsole().error(url, e);
+        } finally {
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    LogUtil.getConsole().error(url, e);
+                }
+            }
+            if (httpClient != null) {
+                try {
+                    httpClient.close();
+                } catch (IOException e) {
+                    LogUtil.getConsole().error(url, e);
+                }
+            }
+        }
+
+        return body;
+    }
+
+    public static String httpPostJson(String url, String parameters) {
+        String body = "";
+        CloseableHttpResponse response = null;
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPost method = new HttpPost(url);
+
+        try {
+            method.addHeader("Content-type","application/json; charset=utf-8");
+            method.setHeader("Accept", "application/json");
+            method.setEntity(new StringEntity(parameters, Charset.forName("UTF-8")));
+            response = httpClient.execute(method);
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != HttpStatus.SC_OK) {
+                LogUtil.getConsole().error(url + "网络问题:" + statusCode);
+            } else {
+                HttpEntity entity = response.getEntity();
+                body = EntityUtils.toString(entity, "utf-8").trim();
+            }
+        } catch (ClientProtocolException e) {
+            LogUtil.getConsole().error(url, e);
+
+        } catch (IOException e) {
+            LogUtil.getConsole().error(url, e);
+        } finally {
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    LogUtil.getConsole().error(url, e);
+                }
+            }
+            if (httpClient != null) {
+                try {
+                    httpClient.close();
+                } catch (IOException e) {
+                    LogUtil.getConsole().error(url, e);
+                }
+            }
+        }
+
+        return body;
+    }
+	
 		public String postJson(String logType,String fileName,String json) {
 			return post(logType,fileName,json);
 		}
