@@ -200,17 +200,23 @@ public class HttpUtil {
         return body;
     }
 
-    public static String httpPostJson(String url, String parameters) {
+    public static String httpGet(String url, Map<String, String> params) {
         String body = "";
         CloseableHttpResponse response = null;
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        HttpPost method = new HttpPost(url);
-
+        HttpContext context = HttpClientContext.create();
         try {
-            method.addHeader("Content-type","application/json; charset=utf-8");
-            method.setHeader("Accept", "application/json");
-            method.setEntity(new StringEntity(parameters, Charset.forName("UTF-8")));
-            response = httpClient.execute(method);
+            List<NameValuePair> pairList = new ArrayList<>();
+            if (Objects.nonNull(params)) {
+                for (Map.Entry<String, String> entry : params.entrySet()) {
+                    pairList.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+
+                }
+            }
+            UrlEncodedFormEntity uefEntity = new UrlEncodedFormEntity(pairList, "UTF-8");
+            String str = EntityUtils.toString(uefEntity);
+            HttpGet method = new HttpGet(url + "?" + str);
+            method.setHeader("Accept", "application/json; charset=utf-8");
+            response = httpClient.execute(method, context);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != HttpStatus.SC_OK) {
                 LogUtil.getConsole().error(url + "网络问题:" + statusCode);
@@ -231,16 +237,101 @@ public class HttpUtil {
                     LogUtil.getConsole().error(url, e);
                 }
             }
-            if (httpClient != null) {
+        }
+
+        return body;
+    }
+
+    public static String httpPostForm(String url, Map<String, String> params) {
+        String body = "";
+        CloseableHttpResponse response = null;
+        HttpPost method = new HttpPost(url);
+        HttpContext context = HttpClientContext.create();
+        try {
+            List<NameValuePair> pairList = new ArrayList<>();
+            if (Objects.nonNull(params)) {
+                for (Map.Entry<String, String> entry : params.entrySet()) {
+                    pairList.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+
+                }
+            }
+
+            UrlEncodedFormEntity uefEntity = new UrlEncodedFormEntity(pairList, "UTF-8");
+            method.setEntity(uefEntity);
+            method.setHeader("Content-Type", "application/x-www-form-urlencoded");
+            method.setHeader("Accept", "application/json; charset=utf-8");
+            response = httpClient.execute(method, context);
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != HttpStatus.SC_OK) {
+                LogUtil.getConsole().error(url + "网络问题:" + statusCode);
+            } else {
+                HttpEntity entity = response.getEntity();
+                body = EntityUtils.toString(entity, "utf-8").trim();
+            }
+        } catch (ClientProtocolException e) {
+            LogUtil.getConsole().error(url, e);
+
+        } catch (IOException e) {
+            LogUtil.getConsole().error(url, e);
+        } finally {
+            if (response != null) {
                 try {
-                    httpClient.close();
+                    response.close();
+                } catch (IOException e) {
+                    LogUtil.getConsole().error(url, e);
+                }
+            }
+
+        }
+
+        return body;
+    }
+    public static String getBasicAuthorization(String username, String password) {
+        String encodeKey = username + ":" + password;
+        return "Basic " + String.valueOf(Base64.encode(encodeKey.getBytes()));
+    }
+    public static String httpPostJson(String url,String paramters,String userName,String password){
+        if(StringUtils.isBlank(paramters)){
+            throw new NullPointerException("paramtres 为空");
+        }
+        String body = "";
+        CloseableHttpResponse response = null;
+        HttpPost method = new HttpPost(url);
+        HttpContext context = HttpClientContext.create();
+        try {
+            method.addHeader("Content-type", "application/json; charset=utf-8");
+            method.setHeader("Accept", "application/json; charset=utf-8");
+            if(StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)){
+                method.setHeader("Authorization",getBasicAuthorization(userName,password));
+            }
+            method.setEntity(new StringEntity(paramters, Charset.forName("UTF-8")));
+            response = httpClient.execute(method, context);
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != HttpStatus.SC_OK) {
+                LogUtil.getConsole().error(url + "网络问题:" + statusCode);
+            } else {
+                HttpEntity entity = response.getEntity();
+                body = EntityUtils.toString(entity, "utf-8").trim();
+            }
+        } catch (ClientProtocolException e) {
+            LogUtil.getConsole().error(url, e);
+
+        } catch (IOException e) {
+            LogUtil.getConsole().error(url, e);
+        } finally {
+            if (response != null) {
+                try {
+                    response.close();
                 } catch (IOException e) {
                     LogUtil.getConsole().error(url, e);
                 }
             }
         }
-
         return body;
+    }
+
+    public static String httpPostJson(String url, String paramters) {
+        return httpPostJson(url,paramters,null,null);
     }
 	
 		public String postJson(String logType,String fileName,String json) {
